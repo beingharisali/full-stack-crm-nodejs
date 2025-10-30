@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "1- use \"git pull origin main\" command to get pull of recent code done by \"beingharisali\".\r 2- In earlier commit of \"shahzaib-dev79\", there was issue in server start, because \"require\" spell was incorrect.\r 3- the database connection code was incorrect as there was multiple promises (first used trycatch block, then in that block, used .then promise)\r it's a bad approach. Sorted that part as well",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +18,13 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "morgan": "^1.10.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beingharisali/full-stack-crm-nodejs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/beingharisali/full-stack-crm-nodejs/issues"
+  },
+  "homepage": "https://github.com/beingharisali/full-stack-crm-nodejs#readme"
 }

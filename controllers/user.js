@@ -1,6 +1,7 @@
-const userModel = require("../models/user");
+const userModel = require("../model/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const express = require("express");
 const register = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
   const isUserExist = await userModel.findOne({ email });
@@ -22,7 +23,7 @@ const register = async (req, res) => {
     password: hashedPassword,
     role,
   });
-  res.status(201).jaon({
+  res.status(201).json({
     success: "true",
     msg: "user regustered successfully",
     registerUser,
