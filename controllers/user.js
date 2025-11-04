@@ -16,7 +16,7 @@ const register = async (req, res) => {
     process.env.JWT_SECRET
   );
   const hashedPassword = await bcrypt.hash(password, 10);
-  const registerUser = await userModel.create({
+  const user = await userModel.create({
     firstName,
     lastName,
     email,
@@ -26,7 +26,7 @@ const register = async (req, res) => {
   res.status(201).json({
     success: "true",
     msg: "user regustered successfully",
-    registerUser,
+    user,
     token,
   });
 };
