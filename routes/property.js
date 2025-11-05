@@ -12,9 +12,9 @@ const adminOnly = require("../middleware/admin");
 const { get } = require("mongoose");
 
 router.post("/create-property", auth, adminOnly, createProperty);
-router.get("/get-property", auth, adminOnly, getProperty);
+router.get("/get-property", auth, getProperty);
 router.patch("/edit-property/:id", auth, adminOnly, editProperty);
 router.delete("/delete-property/:id", auth, adminOnly, deleteProperty);
-router.post("get-single-property/:id", auth, adminOnly, getSingleProperty);
+router.get("get-single-property/:id", auth, adminOnly, getSingleProperty);
 
 module.exports = router;

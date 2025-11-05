@@ -97,3 +97,4 @@ module.exports = {
 	editProperty,
 	getSingleProperty,
 };
+console.log(object);
