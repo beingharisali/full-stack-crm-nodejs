@@ -89,3 +89,12 @@ const deleteProperty = async (req, res) => {
 		});
 	}
 };
+
+module.exports = {
+	getProperty,
+	createProperty,
+	deleteProperty,
+	editProperty,
+	getSingleProperty,
+};
+console.log(object);
