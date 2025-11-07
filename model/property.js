@@ -23,3 +23,4 @@ const propertySchema = new mongoose.Schema({
 });
 const propertyModel = mongoose.model("Propertie", propertySchema);
 module.exports = propertyModel;
+console.log(object);
