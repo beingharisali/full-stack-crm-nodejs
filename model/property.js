@@ -13,6 +13,11 @@ const propertySchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	createdBy: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: user,
+		required: true,
+	},
 	desc: {
 		type: String,
 		required: true,
@@ -20,7 +25,12 @@ const propertySchema = new mongoose.Schema({
 	imageURL: {
 		type: String,
 	},
+	createdAt: {
+		type: Date,
+		default: Date.now,
+		required: true,
+	},
 });
 const propertyModel = mongoose.model("Propertie", propertySchema);
 module.exports = propertyModel;
-console.log(object);
+console.log;
