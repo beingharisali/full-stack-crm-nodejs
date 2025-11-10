@@ -20,7 +20,38 @@ const createProperty = async (req, res) => {
 };
 const getProperty = async (req, res) => {
 	try {
-		const getProperties = await propertyModel.find({});
+		const { city, type, maxPrice, minPrice } = req.query;
+		const filter = {};
+		if (city) {
+			filter.city = { $regex: city, $options: i };
+		}
+		if (type) {
+			filter.type = { $regex: type, $options: i };
+		}
+		if (maxPrice || minPrice) {
+			filter.price = {};
+			if (minPrice) {
+				filter.price.$gte = parseInt(minPrice);
+			}
+			if (maxPrice) {
+				filter.price.$lte = parseInt(maxPrice);
+			}
+		}
+
+		const sort = {};
+		const validSortFields = ["price", "createdAt", "updatedAt", "title"];
+		const validSortOrders = ["asc", "desc", "ascending", "descending", 1, -1];
+
+		const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+		const order = validSortOrders.includes(sortOrder)
+			? sortOrder === "desc" || sortOrder === "descending" || sortOrder === -1
+				? -1
+				: 1
+			: -1;
+
+		sort[sortField] = order;
+
+		const getProperties = await propertyModel.find(filter).sort(sort);
 		res.status(200).json({
 			success: true,
 			msg: "properties fetched successfully",
@@ -97,4 +128,5 @@ module.exports = {
 	editProperty,
 	getSingleProperty,
 };
+console.log(object);
 console.log(object);
