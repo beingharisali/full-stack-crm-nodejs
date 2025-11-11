@@ -15,4 +15,3 @@ const adminOnly = async (req, res, next) => {
 };
 
 module.exports = adminOnly;
-console.log(object);
