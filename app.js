@@ -22,4 +22,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
 	console.log(`Application is up and listening on port ${port}`);
 });
-console.log(object);

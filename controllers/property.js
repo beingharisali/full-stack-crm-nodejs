@@ -7,27 +7,31 @@ const createProperty = async (req, res) => {
 
 		res.status(201).json({
 			success: true,
-			msg: "property created successfully",
+			msg: "Property created successfully",
 			property: create,
 		});
 	} catch (error) {
-		res.status(400).json({
+		res.status(500).json({
 			success: false,
-			msg: "Error occured in creating property",
+			msg: "Error occurred in creating property",
 			error: error.message,
 		});
 	}
 };
+
 const getProperty = async (req, res) => {
 	try {
-		const { city, type, maxPrice, minPrice } = req.query;
+		const { city, type, maxPrice, minPrice, sortBy, sortOrder } = req.query;
+
 		const filter = {};
+
 		if (city) {
-			filter.city = { $regex: city, $options: i };
+			filter.city = { $regex: city, $options: "i" };
 		}
 		if (type) {
-			filter.type = { $regex: type, $options: i };
+			filter.type = { $regex: type, $options: "i" };
 		}
+
 		if (maxPrice || minPrice) {
 			filter.price = {};
 			if (minPrice) {
@@ -40,11 +44,19 @@ const getProperty = async (req, res) => {
 
 		const sort = {};
 		const validSortFields = ["price", "createdAt", "updatedAt", "title"];
-		const validSortOrders = ["asc", "desc", "ascending", "descending", 1, -1];
+		const validSortOrders = [
+			"asc",
+			"desc",
+			"ascending",
+			"descending",
+			"1",
+			"-1",
+		];
 
 		const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+
 		const order = validSortOrders.includes(sortOrder)
-			? sortOrder === "desc" || sortOrder === "descending" || sortOrder === -1
+			? sortOrder === "desc" || sortOrder === "descending" || sortOrder === "-1"
 				? -1
 				: 1
 			: -1;
@@ -52,48 +64,71 @@ const getProperty = async (req, res) => {
 		sort[sortField] = order;
 
 		const getProperties = await propertyModel.find(filter).sort(sort);
+
 		res.status(200).json({
 			success: true,
-			msg: "properties fetched successfully",
-			property: getProperties,
+			msg: "Properties fetched successfully",
+			properties: getProperties,
 		});
 	} catch (error) {
-		res.status(404).json({
+		res.status(500).json({
 			success: false,
-			msg: "error occured in fetching data from databse",
-			error: error,
+			msg: "Error occurred in fetching data from database",
+			error: error.message,
 		});
 	}
 };
+
 const getSingleProperty = async (req, res) => {
 	try {
-		const getOneProperty = await propertyModel.findOne(req.params.id);
+		const getOneProperty = await propertyModel.findById(req.params.id);
+
+		if (!getOneProperty) {
+			return res.status(404).json({
+				success: false,
+				msg: `Property with ID ${req.params.id} not found.`,
+			});
+		}
+
 		res.status(200).json({
 			success: true,
-			msg: "fetched one product sucessfully",
+			msg: "Fetched one property successfully",
 			singleProperty: getOneProperty,
 		});
 	} catch (error) {
-		res.status(404).json({
+		res.status(400).json({
 			success: false,
 			msg: error.message,
-			error: error,
+			error: error.message,
 		});
 	}
 };
+
 const editProperty = async (req, res) => {
 	try {
-		const updateProperty = await propertyModel.findByIdAndUpdate(req.params.id);
-		res.status(201).json({
+		const updateProperty = await propertyModel.findByIdAndUpdate(
+			req.params.id,
+			req.body,
+			{ new: true, runValidators: true }
+		);
+
+		if (!updateProperty) {
+			return res.status(404).json({
+				success: false,
+				msg: `Property with ID ${req.params.id} not found for update.`,
+			});
+		}
+
+		res.status(200).json({
 			success: true,
-			msg: "property updated successfully",
+			msg: "Property updated successfully",
 			property: updateProperty,
 		});
 	} catch (error) {
 		res.status(400).json({
-			success: true,
+			success: false,
 			msg: error.message,
-			error: error,
+			error: error.message,
 		});
 	}
 };
@@ -101,22 +136,24 @@ const editProperty = async (req, res) => {
 const deleteProperty = async (req, res) => {
 	try {
 		const deleteProp = await propertyModel.findByIdAndDelete(req.params.id);
+
 		if (!deleteProp) {
 			return res.status(404).json({
 				success: false,
 				msg: `Property with ID ${req.params.id} not found for deletion.`,
 			});
 		}
-		res(201).json({
+
+		res.status(200).json({
 			success: true,
-			msg: "property deleted successfully",
+			msg: "Property deleted successfully",
 			property: deleteProp,
 		});
 	} catch (error) {
 		res.status(400).json({
 			success: false,
 			msg: error.message,
-			error: error,
+			error: error.message,
 		});
 	}
 };
@@ -128,5 +165,3 @@ module.exports = {
 	editProperty,
 	getSingleProperty,
 };
-console.log(object);
-console.log(object);
