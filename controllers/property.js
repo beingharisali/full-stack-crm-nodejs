@@ -2,32 +2,32 @@ const { get } = require("mongoose");
 const propertyModel = require("../model/property");
 
 const createProperty = async (req, res) => {
-	 const files = req.files;
-    const body = req.body;
+	const files = req.files;
+	const body = req.body;
 
-    const streamUpload = (fileBuffer) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "crm/documents",
-            resource_type: "auto",
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        stream.end(fileBuffer);
-      });
-    };
+	const streamUpload = (fileBuffer) => {
+		return new Promise((resolve, reject) => {
+			const stream = cloudinary.uploader.upload_stream(
+				{
+					folder: "crm/documents",
+					resource_type: "auto",
+				},
+				(error, result) => {
+					if (result) resolve(result);
+					else reject(error);
+				}
+			);
+			stream.end(fileBuffer);
+		});
+	};
 
-    // ✅ upload all files to Cloudinary
-    const fileUrls = files?.length
-      ? await Promise.all(files.map((file) => streamUpload(file.buffer)))
-      : [];
+	// ✅ upload all files to Cloudinary
+	const fileUrls = files?.length
+		? await Promise.all(files.map((file) => streamUpload(file.buffer)))
+		: [];
 
-    const uploadedUrls = fileUrls.map((f) => f.secure_url);
-	console.log("uploadedUrls", uploadedUrls)
+	const uploadedUrls = fileUrls.map((f) => f.secure_url);
+	console.log("uploadedUrls", uploadedUrls);
 	try {
 		const create = await propertyModel.create(body);
 
@@ -119,7 +119,7 @@ const getSingleProperty = async (req, res) => {
 		res.status(200).json({
 			success: true,
 			msg: "Fetched one property successfully",
-			singleProperty: getOneProperty,
+			property: getOneProperty,
 		});
 	} catch (error) {
 		res.status(400).json({
