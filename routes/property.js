@@ -1,16 +1,18 @@
 const {
-  getProperty,
-  createProperty,
-  deleteProperty,
-  editProperty,
-  getSingleProperty,
+	getProperty,
+	createProperty,
+	deleteProperty,
+	editProperty,
+	getSingleProperty,
 } = require("../controllers/property");
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/auth");
-const adminOnly = require("../middleware/admin");
+const multer = require("multer");
 
-router.post("/create-property", createProperty);
+const upload = multer();
+
+// expect field name `images` containing multiple files
+router.post("/create-property", upload.array("images"), createProperty);
 router.get("/get-property", getProperty);
 router.patch("/edit-property/:id", editProperty);
 router.delete("/delete-property/:id", deleteProperty);
