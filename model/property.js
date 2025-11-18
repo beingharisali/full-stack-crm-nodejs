@@ -13,8 +13,7 @@ const propertySchema = new mongoose.Schema({
     required: true,
   },
   createdBy: {
-    // type: mongoose.Schema.Types.ObjectId,
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "user",
     required: true,
   },
