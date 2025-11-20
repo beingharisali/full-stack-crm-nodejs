@@ -4,7 +4,7 @@ const {
   getSingleLead,
   getLead,
   createLead,
-} = require("../controllers/lead");
+} = require("../controllers/leads");
 const express = require("express");
 const router = express.Router();
 
