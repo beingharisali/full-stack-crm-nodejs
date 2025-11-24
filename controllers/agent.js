@@ -1,42 +1,46 @@
 const agentModel = require("../model/agent");
 
 const createAgent = async (req, res) => {
-	const { name, email, assignedProperty } = req.body;
+	const { name, email, assignedProperties } = req.body;
 
 	if (!name || !email) {
-		return res.status(400).json({
-			success: false,
-			msg: "Name and email are required fields",
-		});
+		return res
+			.status(400)
+			.json({ success: false, msg: "Name and email are required fields" });
 	}
 
 	try {
 		const isAgent = await agentModel.findOne({ email });
 
 		if (isAgent) {
-			return res.status(409).json({
-				success: false,
-				msg: "Agent already exists!",
-			});
+			return res
+				.status(409)
+				.json({ success: false, msg: "Agent already exists!" });
 		}
 
 		const agent = await agentModel.create({
-			name: name,
-			email: email,
-			assignedProperty: assignedProperty,
+			name,
+			email,
+			assignedProperties: assignedProperties || [],
 		});
 
-		res.status(201).json({
-			success: true,
-			msg: "Agent created successfully",
-			agent: agent,
-		});
+		if (Array.isArray(assignedProperties) && assignedProperties.length > 0) {
+			await Promise.all(
+				assignedProperties.map((propId) =>
+					require("../model/property").findByIdAndUpdate(propId, {
+						assignedTo: agent._id,
+					})
+				)
+			);
+		}
+
+		res
+			.status(201)
+			.json({ success: true, msg: "Agent created successfully", agent });
 	} catch (error) {
-		res.status(500).json({
-			success: false,
-			msg: "Internal server error",
-			error: process.env.NODE_ENV === "production" ? {} : error,
-		});
+		res
+			.status(500)
+			.json({ success: false, msg: "Internal server error", error });
 	}
 };
 

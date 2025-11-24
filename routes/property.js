@@ -8,11 +8,11 @@ const {
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const auth = require("../middleware/auth");
 
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
 
-// expect field name `images` containing multiple files
-router.post("/create-property", upload.array("images"), createProperty);
+router.post("/create-property", auth, upload.array("images"), createProperty);
 router.get("/get-property", getProperty);
 router.patch("/edit-property/:id", editProperty);
 router.delete("/delete-property/:id", deleteProperty);

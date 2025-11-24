@@ -12,10 +12,7 @@ const register = async (req, res) => {
 			msg: "User already exist, please use another email",
 		});
 	}
-	const token = jwt.sign(
-		{ firstName, lastName, email, password, role },
-		process.env.JWT_SECRET
-	);
+	const token = jwt.sign({ userId: null, email, role }, process.env.JWT_SECRET);
 	const hashedPassword = await bcrypt.hash(password, 10);
 	const user = await userModel.create({
 		firstName,
@@ -25,19 +22,28 @@ const register = async (req, res) => {
 		role,
 	});
 
-	// include property data (all properties for now)
+	const tokenWithId = jwt.sign(
+		{
+			firstName: user.firstName,
+			lastName: user.lastName,
+			userId: user._id,
+			email: user.email,
+			role: user.role,
+		},
+		process.env.JWT_SECRET
+	);
+
 	let properties = [];
 	try {
 		properties = await propertyModel.find({}).lean();
 	} catch (err) {
-		// ignore property lookup failures but log
 		console.error("Failed to fetch properties:", err);
 	}
 	res.status(201).json({
 		success: "true",
 		msg: "user regustered successfully",
 		user,
-		token,
+		token: tokenWithId,
 		properties,
 	});
 };
@@ -59,16 +65,13 @@ const login = async (req, res) => {
 	}
 	const token = jwt.sign(
 		{
-			firstName: isUserExist.firstName,
-			lastName: isUserExist.lastName,
+			userId: isUserExist._id,
 			email: isUserExist.email,
-			password: isUserExist.password,
 			role: isUserExist.role,
 		},
 		process.env.JWT_SECRET
 	);
 
-	// include property data
 	let properties = [];
 	try {
 		properties = await propertyModel.find({}).lean();

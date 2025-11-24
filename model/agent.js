@@ -11,10 +11,10 @@ const agentSchema = new mongoose.Schema({
 	},
 	assignedProperties: {
 		type: [mongoose.Schema.Types.ObjectId],
-		ref: "property",
+		ref: "Property",
 		default: [],
 	},
 });
 
-const agentModel = mongoose.model("agent", agentSchema);
+const agentModel = mongoose.model("Agent", agentSchema);
 module.exports = agentModel;
