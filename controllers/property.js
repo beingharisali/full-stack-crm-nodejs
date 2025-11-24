@@ -1,9 +1,15 @@
 const { get } = require("mongoose");
 const propertyModel = require("../model/property");
+const agentModel = require("../model/agent");
+const cloudinary = require("../utils/cloudinary");
 
 const createProperty = async (req, res) => {
-	const files = req.files;
-	const body = req.body;
+	const files = req.files || [];
+	const body = req.body || {};
+
+	if (req.user && req.user.userId) {
+		body.createdBy = req.user.userId;
+	}
 
 	const streamUpload = (fileBuffer) => {
 		return new Promise((resolve, reject) => {
@@ -21,15 +27,54 @@ const createProperty = async (req, res) => {
 		});
 	};
 
-	// ✅ upload all files to Cloudinary
-	const fileUrls = files?.length
-		? await Promise.all(files.map((file) => streamUpload(file.buffer)))
-		: [];
+	let fileUrls = [];
+	if (files.length) {
+		try {
+			fileUrls = await Promise.all(
+				files.map((file) => streamUpload(file.buffer))
+			);
+		} catch (uploadErr) {
+			console.error("Cloudinary upload failed:", uploadErr);
+			fileUrls = [];
+		}
+	}
 
-	const uploadedUrls = fileUrls.map((f) => f.secure_url);
-	console.log("uploadedUrls", uploadedUrls);
+	const uploadedUrls = fileUrls.map((f) => f?.secure_url).filter(Boolean);
+
+	if (uploadedUrls.length) {
+		body.images = uploadedUrls;
+	}
+
+	// use first image as backward-compatible single image URL
+	if (uploadedUrls.length && !body.imageURL) {
+		body.imageURL = uploadedUrls[0];
+	}
+
+	// cast numeric fields
+	if (body.price) {
+		const parsed = Number(body.price);
+		if (!Number.isNaN(parsed)) body.price = parsed;
+	}
+
+	if (body.agentId) {
+		body.assignedTo = body.agentId;
+	}
+
+	// basic validation
+	if (!body.title || !body.price || !body.city || !body.desc) {
+		return res
+			.status(400)
+			.json({ success: false, msg: "Missing required property fields" });
+	}
+
 	try {
 		const create = await propertyModel.create(body);
+
+		if (create.assignedTo) {
+			await agentModel.findByIdAndUpdate(create.assignedTo, {
+				$addToSet: { assignedProperties: create._id },
+			});
+		}
 
 		res.status(201).json({
 			success: true,
@@ -37,10 +82,14 @@ const createProperty = async (req, res) => {
 			property: create,
 		});
 	} catch (error) {
+		console.error("Failed to create property:", error);
 		res.status(500).json({
 			success: false,
 			msg: "Error occurred in creating property",
-			error: error.message,
+			error:
+				process.env.NODE_ENV === "production"
+					? error.message
+					: { message: error.message, stack: error.stack },
 		});
 	}
 };
