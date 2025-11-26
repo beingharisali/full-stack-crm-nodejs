@@ -41,8 +41,14 @@ const register = async (req, res) => {
 	}
 	res.status(201).json({
 		success: "true",
-		msg: "user regustered successfully",
-		user,
+		msg: "user registered successfully",
+		user: {
+			id: user._id,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			email: user.email,
+			role: user.role,
+		},
 		token: tokenWithId,
 		properties,
 	});
@@ -84,10 +90,10 @@ const login = async (req, res) => {
 		msg: "login successfully",
 		token,
 		user: {
+			id: isUserExist._id,
 			firstName: isUserExist.firstName,
 			lastName: isUserExist.lastName,
 			email: isUserExist.email,
-			password: isUserExist.password,
 			role: isUserExist.role,
 		},
 		properties,
