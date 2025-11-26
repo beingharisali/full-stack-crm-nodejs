@@ -1,61 +1,185 @@
 const Transaction = require("../model/transaction");
+const mongoose = require("mongoose");
 
 const createTransaction = async (req, res) => {
-    try {
-        const { propertyRef, client, agent, price, status } = req.body;
+	try {
+		const { propertyRef, client, agent, price, status } = req.body;
 
-        const newTransaction = await Transaction.create({
-            propertyRef,
-            client,
-            agent,
-            price,
-            status
-        });
+		if (!propertyRef || price === undefined || price === null) {
+			return res.status(400).json({
+				success: false,
+				message: "propertyRef and price are required",
+			});
+		}
 
-        res.status(201).json({
-            success: true,
-            message: "Transaction created successfully",
-            data: newTransaction
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error creating transaction",
-            error: error.message
-        });
-    }
+		// validate ObjectId format
+		if (!mongoose.Types.ObjectId.isValid(propertyRef)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid propertyRef id" });
+		}
+		if (client && !mongoose.Types.ObjectId.isValid(client)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid client id" });
+		}
+		if (agent && !mongoose.Types.ObjectId.isValid(agent)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid agent id" });
+		}
+
+		const priceNum = Number(price);
+		if (Number.isNaN(priceNum)) {
+			return res.status(400).json({ success: false, message: "Invalid price" });
+		}
+
+		const newTransaction = await Transaction.create({
+			propertyRef,
+			client,
+			agent,
+			price: priceNum,
+			status,
+		});
+
+		res.status(201).json({
+			success: true,
+			message: "Transaction created successfully",
+			data: newTransaction,
+		});
+	} catch (error) {
+		console.error("Create transaction error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Error creating transaction",
+			error: error.message,
+		});
+	}
 };
 
 const updateTransaction = async (req, res) => {
-    try {
-        const transactionId = req.params.id;
+	try {
+		const transactionId = req.params.id;
 
-        const updatedTransaction = await Transaction.findByIdAndUpdate(
-            transactionId,
-            req.body,
-            { new: true }
-        );
+		if (!mongoose.Types.ObjectId.isValid(transactionId)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid transaction id" });
+		}
 
-        if (!updatedTransaction) {
-            return res.status(404).json({
-                success: false,
-                message: "Transaction not found"
-            });
-        }
+		const { propertyRef, client, agent, price } = req.body;
 
-        res.status(200).json({
-            success: true,
-            message: "Transaction updated successfully",
-            data: updatedTransaction
-        });
+		if (propertyRef && !mongoose.Types.ObjectId.isValid(propertyRef)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid propertyRef id" });
+		}
+		if (client && !mongoose.Types.ObjectId.isValid(client)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid client id" });
+		}
+		if (agent && !mongoose.Types.ObjectId.isValid(agent)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid agent id" });
+		}
+		if (price !== undefined && price !== null) {
+			const priceNum = Number(price);
+			if (Number.isNaN(priceNum)) {
+				return res
+					.status(400)
+					.json({ success: false, message: "Invalid price" });
+			}
+			req.body.price = priceNum;
+		}
 
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error updating transaction",
-            error: error.message
-        });
-    }
+		const updatedTransaction = await Transaction.findByIdAndUpdate(
+			transactionId,
+			req.body,
+			{ new: true }
+		);
+
+		if (!updatedTransaction) {
+			return res.status(404).json({
+				success: false,
+				message: "Transaction not found",
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "Transaction updated successfully",
+			data: updatedTransaction,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Error updating transaction",
+			error: error.message,
+		});
+	}
 };
 
-module.exports = { updateTransaction, createTransaction };
+const getTransactions = async (req, res) => {
+	try {
+		const transactions = await Transaction.find({})
+			.populate("propertyRef")
+			.populate("agent")
+			.populate("client");
+		res.status(200).json({ success: true, data: transactions });
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Error fetching transactions",
+			error: error.message,
+		});
+	}
+};
+
+const getSingleTransaction = async (req, res) => {
+	try {
+		const transaction = await Transaction.findById(req.params.id)
+			.populate("propertyRef")
+			.populate("agent")
+			.populate("client");
+		if (!transaction)
+			return res
+				.status(404)
+				.json({ success: false, message: "Transaction not found" });
+		res.status(200).json({ success: true, data: transaction });
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Error fetching transaction",
+			error: error.message,
+		});
+	}
+};
+
+const deleteTransaction = async (req, res) => {
+	try {
+		const deleted = await Transaction.findByIdAndDelete(req.params.id);
+		if (!deleted)
+			return res
+				.status(404)
+				.json({ success: false, message: "Transaction not found" });
+		res
+			.status(200)
+			.json({ success: true, message: "Transaction deleted", data: deleted });
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Error deleting transaction",
+			error: error.message,
+		});
+	}
+};
+
+module.exports = {
+	createTransaction,
+	updateTransaction,
+	getTransactions,
+	getSingleTransaction,
+	deleteTransaction,
+};
