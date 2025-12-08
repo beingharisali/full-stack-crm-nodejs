@@ -33,6 +33,11 @@ const propertySchema = new mongoose.Schema(
 		imageURL: {
 			type: String,
 		},
+		status: {
+			type: String,
+			enum: ["pending", "approved", "rejected"],
+			default: "pending",
+		},
 	},
 	{ timestamps: true }
 );

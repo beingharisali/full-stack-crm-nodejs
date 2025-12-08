@@ -233,10 +233,70 @@ const deleteProperty = async (req, res) => {
 	}
 };
 
+const approveProperty = async (req, res) => {
+	try {
+		const property = await propertyModel.findByIdAndUpdate(
+			req.params.id,
+			{ status: "approved" },
+			{ new: true }
+		);
+
+		if (!property) {
+			return res.status(404).json({
+				success: false,
+				msg: `Property with ID ${req.params.id} not found.`,
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			msg: "Property approved successfully",
+			property: property,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			msg: "Error occurred while approving property",
+			error: error.message,
+		});
+	}
+};
+
+const rejectProperty = async (req, res) => {
+	try {
+		const property = await propertyModel.findByIdAndUpdate(
+			req.params.id,
+			{ status: "rejected" },
+			{ new: true }
+		);
+
+		if (!property) {
+			return res.status(404).json({
+				success: false,
+				msg: `Property with ID ${req.params.id} not found.`,
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			msg: "Property rejected successfully",
+			property: property,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			msg: "Error occurred while rejecting property",
+			error: error.message,
+		});
+	}
+};
+
 module.exports = {
 	getProperty,
 	createProperty,
 	deleteProperty,
 	editProperty,
 	getSingleProperty,
+	approveProperty,
+	rejectProperty,
 };

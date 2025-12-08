@@ -14,6 +14,10 @@ const agentSchema = new mongoose.Schema({
 		ref: "Property",
 		default: [],
 	},
+	isActive: {
+		type: Boolean,
+		default: true,
+	},
 });
 
 const agentModel = mongoose.model("Agent", agentSchema);

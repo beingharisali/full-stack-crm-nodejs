@@ -148,10 +148,70 @@ const updateAgent = async (req, res) => {
 	}
 };
 
+const deactivateAgent = async (req, res) => {
+	try {
+		const agent = await agentModel.findByIdAndUpdate(
+			req.params.id,
+			{ isActive: false },
+			{ new: true }
+		);
+
+		if (!agent) {
+			return res.status(404).json({
+				success: false,
+				msg: "Agent not found",
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			msg: "Agent deactivated successfully",
+			agent: agent,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			msg: "Internal server error",
+			error: error.message,
+		});
+	}
+};
+
+const activateAgent = async (req, res) => {
+	try {
+		const agent = await agentModel.findByIdAndUpdate(
+			req.params.id,
+			{ isActive: true },
+			{ new: true }
+		);
+
+		if (!agent) {
+			return res.status(404).json({
+				success: false,
+				msg: "Agent not found",
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			msg: "Agent activated successfully",
+			agent: agent,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			msg: "Internal server error",
+			error: error.message,
+		});
+	}
+};
+
 module.exports = {
 	updateAgent,
 	deleteAgent,
 	getSingleAgent,
 	getAgent,
 	createAgent,
+	deactivateAgent,
+	activateAgent,
 };

@@ -4,6 +4,8 @@ const {
 	deleteProperty,
 	editProperty,
 	getSingleProperty,
+	approveProperty,
+	rejectProperty,
 } = require("../controllers/property");
 const express = require("express");
 const router = express.Router();
@@ -17,5 +19,7 @@ router.get("/get-property", getProperty);
 router.patch("/edit-property/:id", editProperty);
 router.delete("/delete-property/:id", deleteProperty);
 router.get("/get-single-property/:id", getSingleProperty);
+router.patch("/approve-property/:id", auth, approveProperty);
+router.patch("/reject-property/:id", auth, rejectProperty);
 
 module.exports = router;
