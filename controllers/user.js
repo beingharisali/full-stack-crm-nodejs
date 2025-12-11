@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const express = require("express");
 const propertyModel = require("../model/property");
+const authMiddleware = require("../middleware/auth");
 const register = async (req, res) => {
 	const { firstName, lastName, email, password, role } = req.body;
 	const isUserExist = await userModel.findOne({ email });
@@ -30,7 +31,8 @@ const register = async (req, res) => {
 			email: user.email,
 			role: user.role,
 		},
-		process.env.JWT_SECRET
+		process.env.JWT_SECRET,
+		{ expiresIn: '24h' }
 	);
 
 	let properties = [];
@@ -75,7 +77,8 @@ const login = async (req, res) => {
 			email: isUserExist.email,
 			role: isUserExist.role,
 		},
-		process.env.JWT_SECRET
+		process.env.JWT_SECRET,
+		{ expiresIn: '24h' }
 	);
 
 	let properties = [];
@@ -99,4 +102,33 @@ const login = async (req, res) => {
 		properties,
 	});
 };
-module.exports = { register, login };
+
+const getProfile = async (req, res) => {
+	try {
+		const user = await userModel.findById(req.user.userId).select('-password');
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				msg: "User not found"
+			});
+		}
+		res.status(200).json({
+			success: true,
+			user: {
+				id: user._id,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				email: user.email,
+				role: user.role,
+			}
+		});
+	} catch (error) {
+		console.error("Error fetching profile:", error);
+		res.status(500).json({
+			success: false,
+			msg: "Server error"
+		});
+	}
+};
+
+module.exports = { register, login, getProfile };
