@@ -56,7 +56,15 @@ const register = async (req, res) => {
 	});
 };
 const login = async (req, res) => {
-	const { email, password } = req.body;
+	const { email, password, role } = req.body;
+	
+	if (!email || !password) {
+		return res.status(400).json({
+			success: false,
+			msg: "Email and password are required!",
+		});
+	}
+	
 	const isUserExist = await userModel.findOne({ email });
 	if (!isUserExist) {
 		return res.status(404).json({
@@ -64,6 +72,7 @@ const login = async (req, res) => {
 			msg: "User not registered please create account first",
 		});
 	}
+	
 	const comparePassword = await bcrypt.compare(password, isUserExist.password);
 	if (!comparePassword) {
 		return res.status(404).json({
@@ -71,6 +80,14 @@ const login = async (req, res) => {
 			msg: "Invalid credentials",
 		});
 	}
+	
+	if (role && role !== isUserExist.role) {
+		return res.status(403).json({
+			success: false,
+			msg: `User is registered as ${isUserExist.role}, not as ${role}. Please select the correct role.`,
+		});
+	}
+	
 	const token = jwt.sign(
 		{
 			userId: isUserExist._id,
